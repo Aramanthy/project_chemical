@@ -48,15 +48,20 @@ src/
 │   ├── element_data.gd        # Elements, compounds, atomic mass, reaction energy (Joules/mol)
 │   ├── energy_system.gd       # Total stored energy, real-time power rate (W/s), peak production
 │   ├── reaction_chamber.gd    # Consumes elements, triggers reactions, outputs energy + byproducts
-│   ├── player_inventory.gd    # Carried elements, collection range, extraction power
-│   └── deployable_reactor.gd  # Automated surface facilities producing energy per tick
+│   ├── player_inventory.gd    # Carried elements, capacity (raw elements only)
+│   ├── machine.gd             # Base class for deployable machines + status model   [Stage 1 ✅]
+│   ├── auto_extractor.gd      # Continuous element extraction with power draw       [Stage 1 ✅]
+│   ├── reactor_machine.gd     # Repeating recipe reactor feeding the energy grid    [Stage 1 ✅]
+│   └── machine_catalog.gd     # Machine definitions, build costs, factory           [Stage 1 ✅]
 ├── systems/
+│   ├── game_state.gd          # Aggregate root: energy, storage, machines           [Stage 1 ✅]
+│   ├── simulation_loop.gd     # Deterministic fixed-timestep (0.1s) driver          [Stage 1 ✅]
 │   ├── planet_grid.gd         # Coordinate-based planetary resource nodes & dormant power hubs
-│   ├── simulation_loop.gd     # Deterministic simulation loop for continuous production
 │   ├── tech_tree.gd           # Energy-based upgrades, capacity expansions, recipe unlocks
 │   └── save_system.gd         # JSON state persistence and offline energy calculation
-└── scenes/
-    └── main.tscn              # Testing harness and headless visualizer
+├── scenes/
+│   └── main.tscn              # Testing harness and headless visualizer
+└── tests/                     # Headless unit + scene integration tests
 ```
 
 

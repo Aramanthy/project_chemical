@@ -1,11 +1,18 @@
 extends Control
 
 ## Main controller demonstrating Phase 1 core logic:
-## Element harvesting, chemical reaction energy release, and real-time power rate tracking.
+## Element harvesting, chemical reaction energy release, real-time power rate
+## tracking, and deployable automation driven by a fixed-step SimulationLoop.
 
+const MACHINE_LIST_REFRESH_SEC: float = 0.2
+
+var game_state: GameState
+var sim: SimulationLoop
 var energy_system: EnergySystem
 var inventory: PlayerInventory
-var chamber: ReactionChamber
+var chamber: ReactionChamber  # The player's handheld chamber (manual reactions)
+
+var _machine_list_timer: float = 0.0
 
 @onready var energy_label: Label = $VBoxContainer/Header/VBox/EnergyLabel
 @onready var power_label: Label = $VBoxContainer/Header/VBox/PowerLabel
@@ -14,31 +21,82 @@ var chamber: ReactionChamber
 @onready var status_label: Label = $VBoxContainer/Body/RightCol/ChamberPanel/VBox/StatusLabel
 @onready var log_box: RichTextLabel = $VBoxContainer/Footer/LogBox
 @onready var auto_repeat_check: CheckBox = $VBoxContainer/Body/RightCol/ChamberPanel/VBox/AutoRepeatCheck
+@onready var build_buttons: VBoxContainer = $VBoxContainer/Body/AutoCol/BuildButtons
+@onready var machine_list: RichTextLabel = $VBoxContainer/Body/AutoCol/MachinePanel/MachineList
 
 func _ready() -> void:
 	# Initialize Headless Systems
-	energy_system = EnergySystem.new()
-	inventory = PlayerInventory.new()
+	game_state = GameState.new()
+	sim = SimulationLoop.new(game_state)
+	energy_system = game_state.energy
+	inventory = game_state.inventory
 	chamber = ReactionChamber.new()
 	
 	# Connect Signals
 	energy_system.energy_changed.connect(_on_energy_changed)
 	energy_system.power_rate_updated.connect(_on_power_rate_updated)
 	inventory.inventory_updated.connect(_on_inventory_updated)
+	game_state.machine_added.connect(_on_machine_added)
 	
 	chamber.reaction_started.connect(_on_reaction_started)
 	chamber.reaction_progress_updated.connect(_on_reaction_progress)
 	chamber.reaction_completed.connect(_on_reaction_completed)
 	
+	_create_build_buttons()
+	
 	# Initial UI Refresh
 	_update_energy_ui()
 	_update_inventory_ui()
+	_update_machine_list()
 	_log("[color=yellow]System initialized.[/color] Ready to synthesize elements and produce power.")
 
 func _process(delta: float) -> void:
-	# Tick systems
+	# Manual chamber follows real time; automation runs on the fixed-step loop
+	# (which also updates the power-rate measurement).
 	chamber.tick(delta, inventory, energy_system)
-	energy_system.update_tick(delta)
+	sim.advance(delta)
+	
+	_machine_list_timer += delta
+	if _machine_list_timer >= MACHINE_LIST_REFRESH_SEC:
+		_machine_list_timer = 0.0
+		_update_machine_list()
+
+# --- AUTOMATION ---
+
+func _create_build_buttons() -> void:
+	for def_id in MachineCatalog.DEFS.keys():
+		var def: Dictionary = MachineCatalog.get_def(def_id)
+		var button := Button.new()
+		button.text = "Build %s (%s)" % [def["name"], EnergySystem.format_joules(def["build_cost_joules"])]
+		button.pressed.connect(_on_build_pressed.bind(def_id))
+		build_buttons.add_child(button)
+
+func _on_build_pressed(def_id: String) -> void:
+	var cost: float = MachineCatalog.get_build_cost(def_id)
+	if game_state.build_machine(def_id) == null:
+		_log("[color=red]Not enough energy to build %s (needs %s).[/color]" % [
+			MachineCatalog.get_def(def_id).get("name", def_id), EnergySystem.format_joules(cost)])
+
+func _on_machine_added(machine: Machine) -> void:
+	_log("[color=violet]Deployed #%d %s.[/color]" % [machine.id, machine.display_name])
+	_update_machine_list()
+
+func _update_machine_list() -> void:
+	if not machine_list:
+		return
+	if game_state.machines.is_empty():
+		machine_list.text = "No machines deployed.\nGenerate energy manually, then build extractors."
+		return
+	var lines: Array[String] = []
+	lines.append("Total draw: %s" % EnergySystem.format_watts(game_state.get_total_power_draw()))
+	for m in game_state.machines:
+		var color: String = "lime" if m.status == Machine.Status.RUNNING else "orange"
+		var extra: String = ""
+		if m is ReactorMachine:
+			extra = " %d%%" % int((m as ReactorMachine).get_progress() * 100.0)
+		lines.append("#%d %s — [color=%s]%s[/color]%s" % [
+			m.id, m.display_name, color, Machine.status_to_string(m.status), extra])
+	machine_list.text = "\n".join(lines)
 
 # --- USER INTERACTIONS (GATHERING & REACTIONS) ---
 
@@ -131,6 +189,7 @@ func _update_inventory_ui() -> void:
 	if lines.is_empty():
 		inventory_label.text = "Inventory empty.\nClick elements above to mine."
 	else:
+		lines.insert(0, "Capacity: %.1f / %.0f (raw elements)" % [inventory.get_capacity_usage(), inventory.max_capacity])
 		inventory_label.text = "\n".join(lines)
 
 func _log(msg: String) -> void:
