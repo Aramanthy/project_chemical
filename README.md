@@ -57,5 +57,5 @@ project_chemical/
 
 ## Project Status
 
-* **Status:** Phase 1 - Core Game Logic & System Design
-* **Version:** 0.1.0-dev
+* **Status:** Phase 1 Complete (Stages 0–5 Verified, 58/58 Headless Tests Passing) — Ready for Phase 2 3D Asset Polish
+* **Version:** 0.2.0-dev

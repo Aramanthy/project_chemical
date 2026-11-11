@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `PlanetGrid` (`src/systems/planet_grid.gd`) managing 3D planetary coordinates, rich element deposits (`H`, `O`, `C`, `U`, `EX_119`), proximity-based mining, and Dormant Alien Power Hubs (`hub_alpha`, `hub_beta`, `planetary_core`).
   - Integrated passive hub power generation into `SimulationLoop` and full planet state persistence in `SaveSystem`.
   - Dormant Alien Power Hub controls in `main.tscn` / `main.gd` + 5 unit tests in `test_planet_grid.gd` (54 tests total).
+- **Stage 5 — 3D Third-Person Prototype:**
+  - `PlanetWorld3D` (`src/scenes/world_3d.gd` & `src/scenes/world_3d.tscn`) rendering a 3D planetary surface, third-person chemist avatar with visor, over-the-shoulder camera rig (`WASD` move, `Q`/`E` camera yaw, `F`/`Space` context interaction), glowing 3D element deposits, alien monoliths, and deployed 3D machine meshes.
+  - Embedded live 3D `SubViewport` and proximity status prompt inside `main.tscn` / `main.gd` + 4 integration tests in `test_world_3d.gd` (58 tests total).
 
 ### Changed
 - Inventory capacity now applies only to raw elements; reaction compounds (e.g. `H2O`, `CH4`) are stored uncapped.

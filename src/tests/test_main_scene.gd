@@ -16,13 +16,15 @@ func _cleanup() -> void:
 
 func test_all_onready_nodes_resolve() -> void:
 	for prop in ["energy_label", "power_label", "inventory_label", "progress_bar",
-			"status_label", "log_box", "auto_repeat_check", "build_buttons", "machine_list", "upgrade_buttons"]:
+			"status_label", "log_box", "auto_repeat_check", "build_buttons",
+			"machine_list", "upgrade_buttons", "hub_buttons", "planet_status_label", "world_3d"]:
 		assert_true(scene.get(prop) != null, "Node for '%s' not found" % prop)
 	_cleanup()
 
 func test_build_buttons_created_for_every_machine() -> void:
 	assert_eq(scene.build_buttons.get_child_count(), MachineCatalog.DEFS.size())
 	assert_eq(scene.upgrade_buttons.get_child_count(), TechTree.UPGRADES.size())
+	assert_eq(scene.hub_buttons.get_child_count(), PlanetGrid.HUB_DEFS.size())
 	_cleanup()
 
 func test_manual_play_to_first_automation() -> void:
