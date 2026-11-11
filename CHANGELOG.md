@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `src/scenes/main.tscn` & `src/scenes/main.gd`: Interactive simulator demonstrating real-time mining, reaction progress, energy generation, and log stream.
 - Headless test framework (`src/tests/`) with 19 unit tests covering energy, inventory, and reaction chamber logic.
 - Test runner script `tools/run_tests.ps1` (detects parse errors and failures; exits non-zero on failure).
+- **Stage 1 — Automation Core:**
+  - `Machine` base class with status reporting (Running / No Power / No Input / Storage Full / Disabled).
+  - `AutoExtractor` (continuous element extraction with power draw) and `ReactorMachine` (repeating recipe reactor).
+  - `MachineCatalog` data definitions and factory (H/O/C extractors, water/methane reactors).
+  - `GameState` aggregate root (energy, storage, machines, build costs).
+  - `SimulationLoop` deterministic fixed-timestep (0.1s) driver, frame-rate independent.
+  - Automation column in the test scene: build buttons and live machine status list.
+- Scene integration test that instantiates `main.tscn` and drives it through UI handlers.
+- Test runner now attributes runtime script errors to the failing test (custom `Logger`).
 
 ### Changed
 - Inventory capacity now applies only to raw elements; reaction compounds (e.g. `H2O`, `CH4`) are stored uncapped.
@@ -38,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Stored Energy / Output Power labels never updated due to incorrect node paths in `main.gd`.
 - Reaction byproducts filling inventory capacity and permanently blocking manual mining.
+- Float drift (10 x 0.1s = 0.9999999s) made 1s reactions take 1.1s and delayed power readings; excess time now carries over between auto-repeated reactions.
 
 ### Security
 - None

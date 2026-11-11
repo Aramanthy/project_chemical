@@ -142,6 +142,29 @@ text = "Synthesize Methane: C + 4H -> CH4 (+890 kJ)"
 layout_mode = 2
 text = "Nuclear Fission: U Fission (+500 MJ)"
 
+[node name="AutoCol" type="VBoxContainer" parent="VBoxContainer/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="AutoHeader" type="Label" parent="VBoxContainer/Body/AutoCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "3. Automation (Deployable Machines)"
+
+[node name="BuildButtons" type="VBoxContainer" parent="VBoxContainer/Body/AutoCol"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MachinePanel" type="PanelContainer" parent="VBoxContainer/Body/AutoCol"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MachineList" type="RichTextLabel" parent="VBoxContainer/Body/AutoCol/MachinePanel"]
+layout_mode = 2
+bbcode_enabled = true
+text = "No machines deployed."
+
 [node name="Footer" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 110)
