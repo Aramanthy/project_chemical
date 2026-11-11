@@ -32,6 +32,7 @@ func step() -> void:
 
 ## Runs a single simulation step with an explicit delta `dt` (used by fixed-step and offline replay).
 func step_dt(dt: float) -> void:
+	state.planet.step(dt, state)
 	for machine in state.machines:
 		machine.step(dt, state)
 	state.energy.update_tick(dt)

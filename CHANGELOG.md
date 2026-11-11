@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Stage 3 — Persistence & Offline Progress:**
   - `SaveSystem` (`src/systems/save_system.gd`) providing JSON state serialization (`to_dict` / `from_dict`), file persistence (`user://savegame.json`), and bounded deterministic offline progress calculation (up to 24h cap).
   - Save / Load / Simulate +60s Offline controls in `main.tscn` / `main.gd` + 4 new tests in `test_save_system.gd` (49 tests total).
+- **Stage 4 — Planetary Grid & Dormant Alien Hubs:**
+  - `PlanetGrid` (`src/systems/planet_grid.gd`) managing 3D planetary coordinates, rich element deposits (`H`, `O`, `C`, `U`, `EX_119`), proximity-based mining, and Dormant Alien Power Hubs (`hub_alpha`, `hub_beta`, `planetary_core`).
+  - Integrated passive hub power generation into `SimulationLoop` and full planet state persistence in `SaveSystem`.
+  - Dormant Alien Power Hub controls in `main.tscn` / `main.gd` + 5 unit tests in `test_planet_grid.gd` (54 tests total).
 
 ### Changed
 - Inventory capacity now applies only to raw elements; reaction compounds (e.g. `H2O`, `CH4`) are stored uncapped.

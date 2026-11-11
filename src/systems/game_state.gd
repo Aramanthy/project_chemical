@@ -10,6 +10,7 @@ signal machine_removed(machine: Machine)
 var energy: EnergySystem = EnergySystem.new()
 var inventory: PlayerInventory = PlayerInventory.new()
 var tech_tree: TechTree = TechTree.new()
+var planet: PlanetGrid = PlanetGrid.new()
 var machines: Array[Machine] = []
 
 var _next_machine_id: int = 1
@@ -112,3 +113,12 @@ func get_total_power_draw() -> float:
 		if m.enabled:
 			total += m.power_draw_watts
 	return total
+
+func serialize_extra() -> Dictionary:
+	return {
+		"planet": planet.to_dict()
+	}
+
+func deserialize_extra(extra: Dictionary) -> void:
+	if extra.has("planet") and extra["planet"] is Dictionary:
+		planet.from_dict(extra["planet"])

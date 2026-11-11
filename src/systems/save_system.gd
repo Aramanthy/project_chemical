@@ -17,7 +17,8 @@ static func to_dict(state: GameState, timestamp_unix: int = -1) -> Dictionary:
 		var m_dict: Dictionary = {
 			"id": m.id,
 			"def_id": m.def_id,
-			"enabled": m.enabled
+			"enabled": m.enabled,
+			"pos": { "x": m.world_position.x, "y": m.world_position.y, "z": m.world_position.z }
 		}
 		if m is ReactorMachine:
 			var rm := m as ReactorMachine
@@ -90,6 +91,9 @@ static func from_dict(data: Dictionary, state: GameState) -> bool:
 		if machine == null:
 			continue
 		machine.enabled = bool(m_dict.get("enabled", true))
+		if m_dict.has("pos") and m_dict["pos"] is Dictionary:
+			var p: Dictionary = m_dict["pos"]
+			machine.world_position = Vector3(float(p.get("x", 0.0)), float(p.get("y", 0.0)), float(p.get("z", 0.0)))
 		state.add_machine(machine)
 		if m_dict.has("id"):
 			machine.id = int(m_dict["id"])
