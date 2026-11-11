@@ -34,6 +34,13 @@ func test_power_rate_measured_per_second() -> void:
 	energy.update_tick(0.5)
 	assert_almost_eq(energy.current_power_watts, 3000.0)
 
+func test_power_rate_updates_after_ten_small_steps() -> void:
+	# Regression: 10 x 0.1s must count as a full second despite float error.
+	energy.add_energy(1000.0)
+	for i in 10:
+		energy.update_tick(0.1)
+	assert_almost_eq(energy.current_power_watts, 1000.0, 0.01)
+
 func test_format_joules_units() -> void:
 	assert_eq(EnergySystem.format_joules(500.0), "500.0 J")
 	assert_eq(EnergySystem.format_joules(286000.0), "286.00 kJ")

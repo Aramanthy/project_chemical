@@ -30,6 +30,7 @@ The player is an experimental chemist traversing a dormant alien planet. The fun
 
 ## 3. Planetary Exploration Hook
 
+* **Camera:** Third-person over-the-shoulder view (Astroneer / Palworld style). The camera follows behind the player character, emphasizing horizon views and 3D spatial exploration.
 The planet contains dormant alien power stations, containment towers, and energy conduits.
 * The player explores the planet to discover raw catalyst vents and dormant reactors.
 * By synthesizing and injecting the required elemental mixtures, reactors come online, expanding the global power grid.

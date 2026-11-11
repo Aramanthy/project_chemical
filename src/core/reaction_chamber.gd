@@ -13,6 +13,8 @@ enum State {
 	PROCESSING
 }
 
+const TIME_EPSILON: float = 0.000001
+
 var state: State = State.IDLE
 var active_recipe_id: String = ""
 var current_progress_sec: float = 0.0
@@ -41,14 +43,18 @@ func start_reaction(recipe_id: String, inventory: PlayerInventory) -> bool:
 	return true
 
 func tick(delta_time: float, inventory: PlayerInventory, energy_system: EnergySystem) -> void:
-	if state != State.PROCESSING:
-		return
-		
-	current_progress_sec += delta_time
-	var ratio: float = clamp(current_progress_sec / total_duration_sec, 0.0, 1.0)
-	reaction_progress_updated.emit(active_recipe_id, ratio)
-	
-	if current_progress_sec >= total_duration_sec:
+	var remaining: float = delta_time
+	# Loop (not recursion) so large time jumps cannot overflow the call stack.
+	while state == State.PROCESSING and remaining > TIME_EPSILON:
+		var needed: float = total_duration_sec - current_progress_sec
+		if remaining < needed - TIME_EPSILON:
+			current_progress_sec += remaining
+			reaction_progress_updated.emit(active_recipe_id, current_progress_sec / total_duration_sec)
+			return
+		# Epsilon above guards float drift (e.g. 10 x 0.1 = 0.9999999).
+		# Leftover time carries into the next auto-repeated reaction.
+		remaining -= max(0.0, needed)
+		reaction_progress_updated.emit(active_recipe_id, 1.0)
 		_finish_reaction(inventory, energy_system)
 
 func _finish_reaction(inventory: PlayerInventory, energy_system: EnergySystem) -> void:

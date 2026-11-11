@@ -7,6 +7,8 @@ extends RefCounted
 signal energy_changed(current_energy: float, delta: float)
 signal power_rate_updated(watts: float)
 
+const TIME_EPSILON: float = 0.000001
+
 var current_energy_joules: float = 0.0
 var total_lifetime_energy: float = 0.0
 var current_power_watts: float = 0.0  # Real-time power output per second
@@ -35,7 +37,8 @@ func has_energy(joules: float) -> bool:
 
 func update_tick(delta_time: float) -> void:
 	_second_timer += delta_time
-	if _second_timer >= 1.0:
+	# Epsilon guards against float drift (e.g. 10 x 0.1 = 0.9999999).
+	if _second_timer >= 1.0 - TIME_EPSILON:
 		current_power_watts = _energy_produced_this_second / _second_timer
 		power_rate_updated.emit(current_power_watts)
 		_energy_produced_this_second = 0.0
