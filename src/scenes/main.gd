@@ -23,6 +23,10 @@ var _machine_list_timer: float = 0.0
 @onready var auto_repeat_check: CheckBox = $VBoxContainer/Body/RightCol/ChamberPanel/VBox/AutoRepeatCheck
 @onready var build_buttons: VBoxContainer = $VBoxContainer/Body/AutoCol/BuildButtons
 @onready var machine_list: RichTextLabel = $VBoxContainer/Body/AutoCol/MachinePanel/MachineList
+@onready var upgrade_buttons: VBoxContainer = $VBoxContainer/Body/TechCol/UpgradeButtons
+
+var _upgrade_btn_map: Dictionary = {}  # { upgrade_id: Button }
+var _build_btn_map: Dictionary = {}    # { def_id: Button }
 
 func _ready() -> void:
 	# Initialize Headless Systems
@@ -31,23 +35,27 @@ func _ready() -> void:
 	energy_system = game_state.energy
 	inventory = game_state.inventory
 	chamber = ReactionChamber.new()
+	game_state.sync_chamber_modifiers(chamber)
 	
 	# Connect Signals
 	energy_system.energy_changed.connect(_on_energy_changed)
 	energy_system.power_rate_updated.connect(_on_power_rate_updated)
 	inventory.inventory_updated.connect(_on_inventory_updated)
 	game_state.machine_added.connect(_on_machine_added)
+	game_state.tech_tree.upgrade_purchased.connect(_on_upgrade_purchased)
 	
 	chamber.reaction_started.connect(_on_reaction_started)
 	chamber.reaction_progress_updated.connect(_on_reaction_progress)
 	chamber.reaction_completed.connect(_on_reaction_completed)
 	
 	_create_build_buttons()
+	_create_upgrade_buttons()
 	
 	# Initial UI Refresh
 	_update_energy_ui()
 	_update_inventory_ui()
 	_update_machine_list()
+	_update_upgrade_buttons()
 	_log("[color=yellow]System initialized.[/color] Ready to synthesize elements and produce power.")
 
 func _process(delta: float) -> void:
@@ -70,12 +78,71 @@ func _create_build_buttons() -> void:
 		button.text = "Build %s (%s)" % [def["name"], EnergySystem.format_joules(def["build_cost_joules"])]
 		button.pressed.connect(_on_build_pressed.bind(def_id))
 		build_buttons.add_child(button)
+		_build_btn_map[def_id] = button
 
 func _on_build_pressed(def_id: String) -> void:
+	if not game_state.is_machine_unlocked(def_id):
+		_log("[color=red]%s requires a higher Tech Tier unlock![/color]" % MachineCatalog.get_def(def_id).get("name", def_id))
+		return
 	var cost: float = MachineCatalog.get_build_cost(def_id)
 	if game_state.build_machine(def_id) == null:
 		_log("[color=red]Not enough energy to build %s (needs %s).[/color]" % [
 			MachineCatalog.get_def(def_id).get("name", def_id), EnergySystem.format_joules(cost)])
+
+func _create_upgrade_buttons() -> void:
+	if not upgrade_buttons:
+		return
+	for upgrade_id in TechTree.UPGRADES.keys():
+		var button := Button.new()
+		button.pressed.connect(_on_upgrade_pressed.bind(upgrade_id))
+		upgrade_buttons.add_child(button)
+		_upgrade_btn_map[upgrade_id] = button
+
+func _on_upgrade_pressed(upgrade_id: String) -> void:
+	var def: Dictionary = TechTree.UPGRADES.get(upgrade_id, {})
+	if not game_state.tech_tree.is_prerequisite_met(upgrade_id):
+		_log("[color=red]Upgrade prerequisite not met for %s.[/color]" % def.get("name", upgrade_id))
+		return
+	if game_state.tech_tree.is_maxed(upgrade_id):
+		_log("[color=orange]%s is already at max level.[/color]" % def.get("name", upgrade_id))
+		return
+	var cost: float = game_state.tech_tree.get_next_cost(upgrade_id)
+	if not game_state.purchase_upgrade(upgrade_id):
+		_log("[color=red]Not enough energy for %s (needs %s).[/color]" % [
+			def.get("name", upgrade_id), EnergySystem.format_joules(cost)])
+
+func _on_upgrade_purchased(upgrade_id: String, new_level: int) -> void:
+	var def: Dictionary = TechTree.UPGRADES.get(upgrade_id, {})
+	game_state.sync_chamber_modifiers(chamber)
+	_update_upgrade_buttons()
+	_update_inventory_ui()
+	_log("[color=gold]Upgrade purchased: %s (Lv.%d)![/color]" % [def.get("name", upgrade_id), new_level])
+
+func _update_upgrade_buttons() -> void:
+	for upgrade_id in _upgrade_btn_map.keys():
+		var btn: Button = _upgrade_btn_map[upgrade_id]
+		var def: Dictionary = TechTree.UPGRADES[upgrade_id]
+		var lvl: int = game_state.tech_tree.get_level(upgrade_id)
+		var max_lvl: int = game_state.tech_tree.get_max_level(upgrade_id)
+		if game_state.tech_tree.is_maxed(upgrade_id):
+			btn.text = "%s [MAX Lv.%d]" % [def["name"], lvl]
+			btn.disabled = true
+		elif not game_state.tech_tree.is_prerequisite_met(upgrade_id):
+			btn.text = "%s [LOCKED]" % def["name"]
+			btn.disabled = true
+		else:
+			var cost: float = game_state.tech_tree.get_next_cost(upgrade_id)
+			btn.text = "%s (Lv.%d/%d) — %s" % [def["name"], lvl, max_lvl, EnergySystem.format_joules(cost)]
+			btn.disabled = false
+	for def_id in _build_btn_map.keys():
+		var bbtn: Button = _build_btn_map[def_id]
+		var mdef: Dictionary = MachineCatalog.get_def(def_id)
+		if game_state.is_machine_unlocked(def_id):
+			bbtn.text = "Build %s (%s)" % [mdef["name"], EnergySystem.format_joules(mdef["build_cost_joules"])]
+			bbtn.disabled = false
+		else:
+			bbtn.text = "[Locked Tier] %s (%s)" % [mdef["name"], EnergySystem.format_joules(mdef["build_cost_joules"])]
+			bbtn.disabled = true
 
 func _on_machine_added(machine: Machine) -> void:
 	_log("[color=violet]Deployed #%d %s.[/color]" % [machine.id, machine.display_name])
@@ -101,19 +168,22 @@ func _update_machine_list() -> void:
 # --- USER INTERACTIONS (GATHERING & REACTIONS) ---
 
 func _on_mine_hydrogen_pressed() -> void:
-	var added: float = inventory.add_element("H", 2.0)
+	var added: float = inventory.add_element("H", 2.0 * game_state.tech_tree.get_mining_multiplier())
 	_log("Mined [color=cyan]+%.1f Hydrogen (H)[/color]" % added)
 
 func _on_mine_oxygen_pressed() -> void:
-	var added: float = inventory.add_element("O", 1.0)
+	var added: float = inventory.add_element("O", 1.0 * game_state.tech_tree.get_mining_multiplier())
 	_log("Mined [color=deep_sky_blue]+%.1f Oxygen (O)[/color]" % added)
 
 func _on_mine_carbon_pressed() -> void:
-	var added: float = inventory.add_element("C", 1.0)
+	var added: float = inventory.add_element("C", 1.0 * game_state.tech_tree.get_mining_multiplier())
 	_log("Mined [color=light_gray]+%.1f Carbon (C)[/color]" % added)
 
 func _on_mine_uranium_pressed() -> void:
-	var added: float = inventory.add_element("U", 1.0)
+	if not game_state.is_element_unlocked("U"):
+		_log("[color=red]Uranium (U) requires Unlock Tier 3: Nuclear Physics![/color]")
+		return
+	var added: float = inventory.add_element("U", 1.0 * game_state.tech_tree.get_mining_multiplier())
 	_log("Mined [color=lawn_green]+%.1f Uranium (U)[/color]" % added)
 
 func _on_start_water_reaction_pressed() -> void:
@@ -131,6 +201,9 @@ func _on_auto_repeat_toggled(button_pressed: bool) -> void:
 
 func _trigger_recipe(recipe_id: String) -> void:
 	var recipe: Dictionary = ElementData.get_recipe(recipe_id)
+	if not game_state.is_recipe_unlocked(recipe_id):
+		_log("[color=red]%s requires a higher Tech Tier unlock![/color]" % recipe.get("name", recipe_id))
+		return
 	if chamber.state == ReactionChamber.State.PROCESSING:
 		_log("[color=orange]Reaction Chamber is currently busy![/color]")
 		return

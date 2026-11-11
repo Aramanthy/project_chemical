@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automation column in the test scene: build buttons and live machine status list.
 - Scene integration test that instantiates `main.tscn` and drives it through UI handlers.
 - Test runner now attributes runtime script errors to the failing test (custom `Logger`).
+- **Stage 2 — Progression & Tech Tree:**
+  - `TechTree` (`src/systems/tech_tree.gd`) with repeatable scaling upgrades (`mining_laser`, `storage_expansion`, `extractor_overclock`, `reactor_catalysts`) and tier gates (`unlock_tier_3_nuclear`, `unlock_tier_4_exotic`).
+  - Expanded `MachineCatalog` with Tier 3 Nuclear (`extractor_u`, `reactor_fusion`, `reactor_fission`) and Tier 4 Exotic (`extractor_ex119`, `reactor_astral`) machines.
+  - Automatic propagation of tech multipliers to inventory capacity, existing/newly deployed machines, and handheld reactions in `GameState`.
+  - Tech Tree & Upgrades UI column in `main.tscn` / `main.gd` + 7 new unit tests in `test_tech_tree.gd` (45 tests total).
 
 ### Changed
 - Inventory capacity now applies only to raw elements; reaction compounds (e.g. `H2O`, `CH4`) are stored uncapped.

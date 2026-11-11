@@ -6,6 +6,7 @@ extends Machine
 
 var element_id: String = ""
 var rate_per_sec: float = 1.0
+var rate_multiplier: float = 1.0
 
 func step(dt: float, state: GameState) -> void:
 	if not enabled:
@@ -21,5 +22,5 @@ func step(dt: float, state: GameState) -> void:
 	if not _draw_power(dt, state):
 		return
 
-	inv.add_element(element_id, rate_per_sec * dt)
+	inv.add_element(element_id, rate_per_sec * rate_multiplier * dt)
 	status = Status.RUNNING
