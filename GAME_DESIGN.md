@@ -57,7 +57,7 @@ src/
 │   ├── game_state.gd          # Aggregate root: energy, storage, machines           [Stage 1 ✅]
 │   ├── simulation_loop.gd     # Deterministic fixed-timestep (0.1s) driver          [Stage 1 ✅]
 │   ├── planet_grid.gd         # Coordinate-based planetary resource nodes & dormant power hubs
-│   ├── tech_tree.gd           # Energy-based upgrades, capacity expansions, recipe unlocks
+│   ├── tech_tree.gd           # Energy-based upgrades, capacity expansions, recipe unlocks [Stage 2 ✅]
 │   └── save_system.gd         # JSON state persistence and offline energy calculation
 ├── scenes/
 │   └── main.tscn              # Testing harness and headless visualizer

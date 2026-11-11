@@ -165,6 +165,20 @@ layout_mode = 2
 bbcode_enabled = true
 text = "No machines deployed."
 
+[node name="TechCol" type="VBoxContainer" parent="VBoxContainer/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TechHeader" type="Label" parent="VBoxContainer/Body/TechCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "4. Tech Tree & Upgrades"
+
+[node name="UpgradeButtons" type="VBoxContainer" parent="VBoxContainer/Body/TechCol"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
 [node name="Footer" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 110)
