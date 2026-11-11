@@ -1,0 +1,161 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8yj7x4n3q5o1"]
+
+[ext_resource type="Script" path="res://src/scenes/main.gd" id="1_main"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/Header"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="VBoxContainer/Header/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "PROJECT CHEMICAL: Element & Energy Simulator (Phase 1)"
+horizontal_alignment = 1
+
+[node name="EnergyLabel" type="Label" parent="VBoxContainer/Header/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 18
+text = "Stored Energy: 0.0 J"
+horizontal_alignment = 1
+
+[node name="PowerLabel" type="Label" parent="VBoxContainer/Header/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Output Power: 0.0 W"
+horizontal_alignment = 1
+
+[node name="Body" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="LeftCol" type="VBoxContainer" parent="VBoxContainer/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="MiningHeader" type="Label" parent="VBoxContainer/Body/LeftCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "1. Planetary Surface Mining"
+
+[node name="MineHButton" type="Button" parent="VBoxContainer/Body/LeftCol"]
+layout_mode = 2
+text = "Mine Hydrogen (H) [+2.0]"
+
+[node name="MineOButton" type="Button" parent="VBoxContainer/Body/LeftCol"]
+layout_mode = 2
+text = "Mine Oxygen (O) [+1.0]"
+
+[node name="MineCButton" type="Button" parent="VBoxContainer/Body/LeftCol"]
+layout_mode = 2
+text = "Mine Carbon (C) [+1.0]"
+
+[node name="MineUButton" type="Button" parent="VBoxContainer/Body/LeftCol"]
+layout_mode = 2
+text = "Mine Uranium (U) [+1.0]"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/Body/LeftCol"]
+layout_mode = 2
+
+[node name="InventoryPanel" type="PanelContainer" parent="VBoxContainer/Body/LeftCol"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/Body/LeftCol/InventoryPanel"]
+layout_mode = 2
+
+[node name="InvTitle" type="Label" parent="VBoxContainer/Body/LeftCol/InventoryPanel/VBox"]
+layout_mode = 2
+text = "Inventory Elements:"
+
+[node name="InventoryText" type="Label" parent="VBoxContainer/Body/LeftCol/InventoryPanel/VBox"]
+layout_mode = 2
+text = "Inventory empty."
+
+[node name="RightCol" type="VBoxContainer" parent="VBoxContainer/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ChamberHeader" type="Label" parent="VBoxContainer/Body/RightCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "2. Reaction Chamber & Power Generation"
+
+[node name="ChamberPanel" type="PanelContainer" parent="VBoxContainer/Body/RightCol"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/Body/RightCol/ChamberPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer/Body/RightCol/ChamberPanel/VBox"]
+layout_mode = 2
+text = "Status: Idle"
+
+[node name="ProgressBar" type="ProgressBar" parent="VBoxContainer/Body/RightCol/ChamberPanel/VBox"]
+layout_mode = 2
+step = 1.0
+
+[node name="AutoRepeatCheck" type="CheckBox" parent="VBoxContainer/Body/RightCol/ChamberPanel/VBox"]
+layout_mode = 2
+text = "Auto-Repeat Reaction (Continuous Idle Power)"
+
+[node name="WaterBtn" type="Button" parent="VBoxContainer/Body/RightCol/ChamberPanel/VBox"]
+layout_mode = 2
+text = "Synthesize Water: 2H + O -> H2O (+286 kJ)"
+
+[node name="MethaneBtn" type="Button" parent="VBoxContainer/Body/RightCol/ChamberPanel/VBox"]
+layout_mode = 2
+text = "Synthesize Methane: C + 4H -> CH4 (+890 kJ)"
+
+[node name="FissionBtn" type="Button" parent="VBoxContainer/Body/RightCol/ChamberPanel/VBox"]
+layout_mode = 2
+text = "Nuclear Fission: U Fission (+500 MJ)"
+
+[node name="Footer" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 110)
+
+[node name="LogBox" type="RichTextLabel" parent="VBoxContainer/Footer"]
+layout_mode = 2
+bbcode_enabled = true
+scroll_following = true
+
+[connection signal="pressed" from="VBoxContainer/Body/LeftCol/MineHButton" to="." method="_on_mine_hydrogen_pressed"]
+[connection signal="pressed" from="VBoxContainer/Body/LeftCol/MineOButton" to="." method="_on_mine_oxygen_pressed"]
+[connection signal="pressed" from="VBoxContainer/Body/LeftCol/MineCButton" to="." method="_on_mine_carbon_pressed"]
+[connection signal="pressed" from="VBoxContainer/Body/LeftCol/MineUButton" to="." method="_on_mine_uranium_pressed"]
+[connection signal="toggled" from="VBoxContainer/Body/RightCol/ChamberPanel/VBox/AutoRepeatCheck" to="." method="_on_auto_repeat_toggled"]
+[connection signal="pressed" from="VBoxContainer/Body/RightCol/ChamberPanel/VBox/WaterBtn" to="." method="_on_start_water_reaction_pressed"]
+[connection signal="pressed" from="VBoxContainer/Body/RightCol/ChamberPanel/VBox/MethaneBtn" to="." method="_on_start_methane_reaction_pressed"]
+[connection signal="pressed" from="VBoxContainer/Body/RightCol/ChamberPanel/VBox/FissionBtn" to="." method="_on_start_fission_reaction_pressed"]
