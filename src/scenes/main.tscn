@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://c8yj7x4n3q5o1"]
+[gd_scene load_steps=3 format=3 uid="uid://c8yj7x4n3q5o1"]
 
 [ext_resource type="Script" path="res://src/scenes/main.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://b6w3dplanet01" path="res://src/scenes/world_3d.tscn" id="2_world3d"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -67,6 +68,32 @@ text = "Load Game (+Offline)"
 [node name="OfflineButton" type="Button" parent="VBoxContainer/Header/VBox/SaveRow"]
 layout_mode = 2
 text = "Simulate +60s Offline"
+
+[node name="PlanetViewPanel" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 210)
+
+[node name="VBox" type="VBoxContainer" parent="VBoxContainer/PlanetViewPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PlanetStatusLabel" type="Label" parent="VBoxContainer/PlanetViewPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.95, 0.75, 1)
+text = "3D Third-Person View — WASD: Move | Q/E: Rotate Cam | F/Space: Mine / Ignite Hub"
+horizontal_alignment = 1
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer/PlanetViewPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="VBoxContainer/PlanetViewPanel/VBox/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(1100, 180)
+render_target_update_mode = 4
+
+[node name="World3D" parent="VBoxContainer/PlanetViewPanel/VBox/SubViewportContainer/SubViewport" instance=ExtResource("2_world3d")]
 
 [node name="Body" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2

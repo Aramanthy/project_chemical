@@ -60,8 +60,9 @@ src/
 │   ├── tech_tree.gd           # Energy-based upgrades, capacity expansions, recipe unlocks [Stage 2 ✅]
 │   └── save_system.gd         # JSON state persistence and offline energy calculation     [Stage 3 ✅]
 ├── scenes/
-│   └── main.tscn              # Testing harness and headless visualizer
-└── tests/                     # Headless unit + scene integration tests
+│   ├── main.tscn              # HUD, automation controls, and embedded 3D viewport  [Stage 5 ✅]
+│   └── world_3d.tscn          # Third-person 3D planetary exploration prototype     [Stage 5 ✅]
+└── tests/                     # 58 headless unit + scene integration tests          [Stages 0–5 ✅]
 ```
 
 

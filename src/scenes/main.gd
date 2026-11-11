@@ -25,6 +25,8 @@ var _machine_list_timer: float = 0.0
 @onready var machine_list: RichTextLabel = $VBoxContainer/Body/AutoCol/MachinePanel/MachineList
 @onready var upgrade_buttons: VBoxContainer = $VBoxContainer/Body/TechCol/UpgradeButtons
 @onready var hub_buttons: VBoxContainer = $VBoxContainer/Body/TechCol/HubButtons
+@onready var planet_status_label: Label = $VBoxContainer/PlanetViewPanel/VBox/PlanetStatusLabel
+@onready var world_3d: PlanetWorld3D = $VBoxContainer/PlanetViewPanel/VBox/SubViewportContainer/SubViewport/World3D
 
 var _upgrade_btn_map: Dictionary = {}  # { upgrade_id: Button }
 var _build_btn_map: Dictionary = {}    # { def_id: Button }
@@ -55,6 +57,9 @@ func _ready() -> void:
 	_create_build_buttons()
 	_create_upgrade_buttons()
 	_create_hub_buttons()
+	if world_3d:
+		world_3d.bind_state(game_state)
+		world_3d.interaction_performed.connect(_on_3d_interaction_performed)
 	
 	# Initial UI Refresh
 	_update_energy_ui()
@@ -62,6 +67,7 @@ func _ready() -> void:
 	_update_machine_list()
 	_update_upgrade_buttons()
 	_update_hub_buttons()
+	_update_planet_status_ui()
 	_log("[color=yellow]System initialized.[/color] Ready to synthesize elements and produce power.")
 
 func _process(delta: float) -> void:
@@ -74,6 +80,7 @@ func _process(delta: float) -> void:
 	if _machine_list_timer >= MACHINE_LIST_REFRESH_SEC:
 		_machine_list_timer = 0.0
 		_update_machine_list()
+		_update_planet_status_ui()
 
 # --- AUTOMATION ---
 
@@ -264,6 +271,9 @@ func _on_load_pressed() -> void:
 	_update_machine_list()
 	_update_upgrade_buttons()
 	_update_hub_buttons()
+	if world_3d:
+		world_3d.rebuild_from_state()
+	_update_planet_status_ui()
 	var offline: Dictionary = res.get("offline", {})
 	var elapsed: float = float(offline.get("elapsed_seconds", 0.0))
 	var gained: float = float(offline.get("energy_gained", 0.0))
@@ -328,6 +338,22 @@ func _on_reaction_completed(recipe_id: String, energy_generated: float) -> void:
 func _update_energy_ui() -> void:
 	if energy_label:
 		energy_label.text = "Stored Energy: " + EnergySystem.format_joules(energy_system.current_energy_joules)
+
+func _update_planet_status_ui() -> void:
+	if planet_status_label and world_3d:
+		planet_status_label.text = world_3d.get_proximity_prompt()
+
+func _on_3d_interaction_performed(res: Dictionary) -> void:
+	if str(res.get("type", "")) == "mine":
+		if bool(res.get("ok", false)):
+			_log("[3D Mine] Extracted [b]+%.1f %s[/b] from %s!" % [
+				float(res.get("added", 0.0)), str(res.get("element", "")), str(res.get("deposit_name", ""))
+			])
+		elif str(res.get("reason", "")) == "tier_locked":
+			_log("[color=red][3D Mine] %s requires a higher Tech Tier unlock![/color]" % str(res.get("deposit", "Deposit")))
+		else:
+			_log("[color=gray][3D] Move closer to a glowing resource vent or alien hub to interact.[/color]")
+	_update_planet_status_ui()
 
 func _update_inventory_ui() -> void:
 	if not inventory_label:
