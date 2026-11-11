@@ -20,6 +20,7 @@ var display_name: String = ""
 var enabled: bool = true
 var power_draw_watts: float = 0.0
 var status: Status = Status.IDLE
+var world_position: Vector3 = Vector3.ZERO
 
 ## Advance this machine by `dt` seconds. Override in subclasses.
 func step(_dt: float, _state: GameState) -> void:

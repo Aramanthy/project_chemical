@@ -24,9 +24,11 @@ var _machine_list_timer: float = 0.0
 @onready var build_buttons: VBoxContainer = $VBoxContainer/Body/AutoCol/BuildButtons
 @onready var machine_list: RichTextLabel = $VBoxContainer/Body/AutoCol/MachinePanel/MachineList
 @onready var upgrade_buttons: VBoxContainer = $VBoxContainer/Body/TechCol/UpgradeButtons
+@onready var hub_buttons: VBoxContainer = $VBoxContainer/Body/TechCol/HubButtons
 
 var _upgrade_btn_map: Dictionary = {}  # { upgrade_id: Button }
 var _build_btn_map: Dictionary = {}    # { def_id: Button }
+var _hub_btn_map: Dictionary = {}      # { hub_id: Button }
 
 func _ready() -> void:
 	# Initialize Headless Systems
@@ -43,6 +45,8 @@ func _ready() -> void:
 	inventory.inventory_updated.connect(_on_inventory_updated)
 	game_state.machine_added.connect(_on_machine_added)
 	game_state.tech_tree.upgrade_purchased.connect(_on_upgrade_purchased)
+	game_state.planet.hub_activated.connect(_on_hub_activated)
+	game_state.planet.planet_awakened.connect(_on_planet_awakened)
 	
 	chamber.reaction_started.connect(_on_reaction_started)
 	chamber.reaction_progress_updated.connect(_on_reaction_progress)
@@ -50,12 +54,14 @@ func _ready() -> void:
 	
 	_create_build_buttons()
 	_create_upgrade_buttons()
+	_create_hub_buttons()
 	
 	# Initial UI Refresh
 	_update_energy_ui()
 	_update_inventory_ui()
 	_update_machine_list()
 	_update_upgrade_buttons()
+	_update_hub_buttons()
 	_log("[color=yellow]System initialized.[/color] Ready to synthesize elements and produce power.")
 
 func _process(delta: float) -> void:
@@ -144,6 +150,48 @@ func _update_upgrade_buttons() -> void:
 			bbtn.text = "[Locked Tier] %s (%s)" % [mdef["name"], EnergySystem.format_joules(mdef["build_cost_joules"])]
 			bbtn.disabled = true
 
+func _create_hub_buttons() -> void:
+	if not hub_buttons:
+		return
+	for hub_id in PlanetGrid.HUB_DEFS.keys():
+		var button := Button.new()
+		button.pressed.connect(_on_hub_pressed.bind(hub_id))
+		hub_buttons.add_child(button)
+		_hub_btn_map[hub_id] = button
+
+func _on_hub_pressed(hub_id: String) -> void:
+	var h: Dictionary = game_state.planet.hubs.get(hub_id, {})
+	if bool(h.get("activated", false)):
+		return
+	if not game_state.planet.activate_hub(hub_id, game_state, false):
+		var req_e: String = EnergySystem.format_joules(float(h.get("required_energy", 0.0)))
+		_log("[color=red]Cannot ignite %s yet (requires %s + %s).[/color]" % [
+			h.get("name", hub_id), req_e, str(h.get("required_elements", {}))
+		])
+
+func _on_hub_activated(hub_id: String) -> void:
+	var h: Dictionary = game_state.planet.hubs.get(hub_id, {})
+	_update_hub_buttons()
+	_log("[color=aqua]Alien Hub Ignited: %s (+%s passive power)![/color]" % [
+		h.get("name", hub_id), EnergySystem.format_watts(float(h.get("passive_power_watts", 0.0)))
+	])
+
+func _on_planet_awakened() -> void:
+	_log("[color=gold][b]*** CENTRAL PLANETARY CORE IGNITED — PLANET AWAKENED! ***[/b][/color]")
+
+func _update_hub_buttons() -> void:
+	for hub_id in _hub_btn_map.keys():
+		var btn: Button = _hub_btn_map[hub_id]
+		var h: Dictionary = game_state.planet.hubs[hub_id]
+		var watts_str: String = EnergySystem.format_watts(float(h["passive_power_watts"]))
+		if bool(h.get("activated", false)):
+			btn.text = "%s [ONLINE +%s]" % [h["name"], watts_str]
+			btn.disabled = true
+		else:
+			var cost_e: String = EnergySystem.format_joules(float(h["required_energy"]))
+			btn.text = "Ignite %s (%s -> +%s)" % [h["name"], cost_e, watts_str]
+			btn.disabled = false
+
 func _on_machine_added(machine: Machine) -> void:
 	_log("[color=violet]Deployed #%d %s.[/color]" % [machine.id, machine.display_name])
 	_update_machine_list()
@@ -215,6 +263,7 @@ func _on_load_pressed() -> void:
 	_update_inventory_ui()
 	_update_machine_list()
 	_update_upgrade_buttons()
+	_update_hub_buttons()
 	var offline: Dictionary = res.get("offline", {})
 	var elapsed: float = float(offline.get("elapsed_seconds", 0.0))
 	var gained: float = float(offline.get("energy_gained", 0.0))

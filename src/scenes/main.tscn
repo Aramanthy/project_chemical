@@ -196,6 +196,18 @@ text = "4. Tech Tree & Upgrades"
 layout_mode = 2
 theme_override_constants/separation = 4
 
+[node name="HubSeparator" type="HSeparator" parent="VBoxContainer/Body/TechCol"]
+layout_mode = 2
+
+[node name="HubHeader" type="Label" parent="VBoxContainer/Body/TechCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "5. Dormant Alien Power Hubs"
+
+[node name="HubButtons" type="VBoxContainer" parent="VBoxContainer/Body/TechCol"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
 [node name="Footer" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 110)
