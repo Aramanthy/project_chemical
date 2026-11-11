@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Expanded `MachineCatalog` with Tier 3 Nuclear (`extractor_u`, `reactor_fusion`, `reactor_fission`) and Tier 4 Exotic (`extractor_ex119`, `reactor_astral`) machines.
   - Automatic propagation of tech multipliers to inventory capacity, existing/newly deployed machines, and handheld reactions in `GameState`.
   - Tech Tree & Upgrades UI column in `main.tscn` / `main.gd` + 7 new unit tests in `test_tech_tree.gd` (45 tests total).
+- **Stage 3 — Persistence & Offline Progress:**
+  - `SaveSystem` (`src/systems/save_system.gd`) providing JSON state serialization (`to_dict` / `from_dict`), file persistence (`user://savegame.json`), and bounded deterministic offline progress calculation (up to 24h cap).
+  - Save / Load / Simulate +60s Offline controls in `main.tscn` / `main.gd` + 4 new tests in `test_save_system.gd` (49 tests total).
 
 ### Changed
 - Inventory capacity now applies only to raw elements; reaction compounds (e.g. `H2O`, `CH4`) are stored uncapped.
