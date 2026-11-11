@@ -199,6 +199,37 @@ func _on_auto_repeat_toggled(button_pressed: bool) -> void:
 	chamber.auto_repeat = button_pressed
 	_log("Auto-repeat reactor set to: [b]%s[/b]" % ("ON" if button_pressed else "OFF"))
 
+func _on_save_pressed() -> void:
+	if SaveSystem.save_to_file(game_state):
+		_log("[color=lime]Game saved to %s.[/color]" % SaveSystem.DEFAULT_SAVE_PATH)
+	else:
+		_log("[color=red]Failed to save game![/color]")
+
+func _on_load_pressed() -> void:
+	var res: Dictionary = SaveSystem.load_from_file(game_state, sim)
+	if not res.get("ok", false):
+		_log("[color=red]Load failed (%s).[/color]" % str(res.get("error", "unknown")))
+		return
+	game_state.sync_chamber_modifiers(chamber)
+	_update_energy_ui()
+	_update_inventory_ui()
+	_update_machine_list()
+	_update_upgrade_buttons()
+	var offline: Dictionary = res.get("offline", {})
+	var elapsed: float = float(offline.get("elapsed_seconds", 0.0))
+	var gained: float = float(offline.get("energy_gained", 0.0))
+	_log("[color=lime]Game loaded![/color] Offline %.1fs -> Generated [b]+%s[/b]." % [
+		elapsed, EnergySystem.format_joules(gained)
+	])
+
+func _on_simulate_offline_pressed() -> void:
+	var report: Dictionary = SaveSystem.apply_offline_progress(game_state, sim, 60.0)
+	_update_energy_ui()
+	_update_inventory_ui()
+	_update_machine_list()
+	_update_upgrade_buttons()
+	_log("[color=aqua]Offline +60s simulated:[/color] Generated [b]+%s[/b]." % EnergySystem.format_joules(report["energy_gained"]))
+
 func _trigger_recipe(recipe_id: String) -> void:
 	var recipe: Dictionary = ElementData.get_recipe(recipe_id)
 	if not game_state.is_recipe_unlocked(recipe_id):

@@ -28,7 +28,11 @@ func advance(delta: float) -> int:
 
 ## Runs exactly one fixed step. Machines update in build order for determinism.
 func step() -> void:
+	step_dt(FIXED_STEP)
+
+## Runs a single simulation step with an explicit delta `dt` (used by fixed-step and offline replay).
+func step_dt(dt: float) -> void:
 	for machine in state.machines:
-		machine.step(FIXED_STEP, state)
-	state.energy.update_tick(FIXED_STEP)
+		machine.step(dt, state)
+	state.energy.update_tick(dt)
 	total_steps += 1

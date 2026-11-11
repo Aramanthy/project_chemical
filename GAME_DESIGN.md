@@ -58,7 +58,7 @@ src/
 │   ├── simulation_loop.gd     # Deterministic fixed-timestep (0.1s) driver          [Stage 1 ✅]
 │   ├── planet_grid.gd         # Coordinate-based planetary resource nodes & dormant power hubs
 │   ├── tech_tree.gd           # Energy-based upgrades, capacity expansions, recipe unlocks [Stage 2 ✅]
-│   └── save_system.gd         # JSON state persistence and offline energy calculation
+│   └── save_system.gd         # JSON state persistence and offline energy calculation     [Stage 3 ✅]
 ├── scenes/
 │   └── main.tscn              # Testing harness and headless visualizer
 └── tests/                     # Headless unit + scene integration tests
